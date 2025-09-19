@@ -10,8 +10,8 @@ from ik_solve import gx7_ik_solve, gx7_fk
 # Define slider parameter ranges
 POSITION_MIN = -0.5
 POSITION_MAX = 0.5
-ORIENTATION_MIN = -np.pi / 2
-ORIENTATION_MAX = np.pi / 2
+ORIENTATION_MIN = -np.pi 
+ORIENTATION_MAX = np.pi 
 PSI_MIN = 0
 PSI_MAX = np.pi
 
@@ -21,7 +21,7 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, -9.81)
 
 # Load plane
-# planeId = p.loadURDF("plane.urdf")
+planeId = p.loadURDF("plane.urdf")
 
 # Get the path to the URDF file
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -47,9 +47,9 @@ end_effector_index = 6
 
 # Create sliders for target position, orientation, and psi
 # Position sliders (x, y, z)
-x_slider = p.addUserDebugParameter("Target X", POSITION_MIN, POSITION_MAX, 0.4)
+x_slider = p.addUserDebugParameter("Target X", POSITION_MIN, POSITION_MAX, 0.0)
 y_slider = p.addUserDebugParameter("Target Y", POSITION_MIN, POSITION_MAX, 0.0)
-z_slider = p.addUserDebugParameter("Target Z", POSITION_MIN, POSITION_MAX, 0.2)
+z_slider = p.addUserDebugParameter("Target Z", POSITION_MIN, POSITION_MAX, 0.6)
 
 # Orientation sliders (roll, pitch, yaw)
 roll_slider = p.addUserDebugParameter("Roll", ORIENTATION_MIN, ORIENTATION_MAX, 0)
@@ -57,11 +57,11 @@ pitch_slider = p.addUserDebugParameter("Pitch", ORIENTATION_MIN, ORIENTATION_MAX
 yaw_slider = p.addUserDebugParameter("Yaw", ORIENTATION_MIN, ORIENTATION_MAX, 0.0)
 
 # Psi slider (redundancy parameter)
-psi_slider = p.addUserDebugParameter("Psi", PSI_MIN, PSI_MAX, np.pi / 2)
+psi_slider = p.addUserDebugParameter("Psi", PSI_MIN, PSI_MAX, np.pi/6)
 
 
-lower_limits = [-120, 0, -120, -120, -120, -91, -180]
-upper_limits = [120, 180, 120, 0, 120, 91, 180]
+lower_limits = [-120, 0, -120, 0, -120, -91, -180]
+upper_limits = [120, 180, 120, 120, 120, 91, 180]
 
 lower_limits = np.array(lower_limits) * np.pi / 180
 upper_limits = np.array(upper_limits) * np.pi / 180
@@ -86,9 +86,17 @@ while True:
 
     # Update end-effector pose
     ee_pose = np.eye(4)
+    
+    
+    ee_ori_start = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])
+    
     ee_pose[:3, :3] = np.array(p.getMatrixFromQuaternion(target_orientation)).reshape(
         3, 3
-    )
+    ) # ori_align
+    
+    # ee_pose[:3, :3] =  ee_pose[:3, :3] @ ee_ori_start
+    print(ee_pose[:3, :3])
+    
     ee_pose[:3, 3] = np.array(target_position)
 
     # Solve inverse kinematics with current slider values
@@ -137,8 +145,8 @@ while True:
         joint_poses = ik_output_limit[best_index].ravel()
 
         pos, ori = gx7_fk(joint_poses)
-        print("=== FK ====")
-        print(f"pos:\n{pos.ravel()}\n ori:\n{ori}")
+        # print("=== FK ====")
+        # print(f"pos:\n{pos.ravel()}\n ori:\n{ori}")
 
         # print(f'qs: {[f"{q:.3f}" for q in joint_poses]}')
         # Apply the calculated joint positions to the robot
@@ -157,10 +165,12 @@ while True:
         ee_ori = ee_link_state[1]
 
         ee_ori_matrix = np.array(p.getMatrixFromQuaternion(ee_ori)).reshape(3, 3)
-        print("=== PB ====")
-        print(f"ee_pos:\n {ee_pos}\n ee_ori:\n {ee_ori_matrix}")
+        # print("=== PB ====")
+        # print(f"ee_pos:\n {ee_pos}\n ee_ori:\n {ee_ori_matrix}")
 
-        print(f"diff xyz: {ee_pos - np.array(target_position)}")
+        # print(f"diff xyz: {ee_pos - np.array(target_position)}")
 
     p.stepSimulation()
     time.sleep(0.01)
+
+    
