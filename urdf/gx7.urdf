@@ -205,16 +205,6 @@
       <mass value="0.01" />
       <inertia ixx="0.01" ixy="0.01" ixz="0.01" iyy="0.01" iyz="0.01" izz="0.01" />
     </inertial>
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <mesh filename="../meshes/Link6.STL" />
-      </geometry>
-      <material name="">
-        <color rgba="0.08 0.08 0.08 1" />
-      </material>
-    </visual> -->
-
   </link>
   <joint name="joint7" type="revolute">
     <origin xyz="0 0.099 0.013" rpy="1.5707963 0 -3.141592616" />
